@@ -9,12 +9,24 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.3",
     "next": "16.3.7",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sqlite-vec": "^0.1.9",
+    "tar": "^7.5.22",
+    "tree-sitter-css": "^0.25.0",
+    "tree-sitter-go": "^0.25.0",
+    "tree-sitter-html": "^0.23.2",
+    "tree-sitter-javascript": "^0.25.0",
+    "tree-sitter-python": "^0.25.0",
+    "tree-sitter-rust": "^0.24.0",
+    "tree-sitter-typescript": "^0.23.2",
+    "web-tree-sitter": "^0.27.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
