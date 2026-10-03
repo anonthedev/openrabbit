@@ -1,5 +1,5 @@
-import { join } from "node:path";
-import { Language, Parser, Query } from "web-tree-sitter";
+import { Language, Parser, Query, type Node } from "web-tree-sitter";
+import { GRAMMARS } from "@/lib/grammars";
 
 export type Chunk = {
   symbol: string;
@@ -7,149 +7,6 @@ export type Chunk = {
   endLine: number;
   text: string;
 };
-
-const NAMED = "[(property_identifier) (private_property_identifier)]";
-
-const TYPESCRIPT_SOURCE = `
-  (function_declaration name: (identifier) @name) @def
-  (generator_function_declaration name: (identifier) @name) @def
-  (function_signature name: (identifier) @name) @def
-  (class_declaration name: (type_identifier) @name) @def
-  (abstract_class_declaration name: (type_identifier) @name) @def
-  (interface_declaration name: (type_identifier) @name) @def
-  (type_alias_declaration name: (type_identifier) @name) @def
-  (enum_declaration name: (identifier) @name) @def
-  (enum_assignment name: (property_identifier) @name) @def
-  (internal_module name: [(identifier) (nested_identifier) (string)] @name) @def
-  (module name: [(identifier) (nested_identifier) (string)] @name) @def
-  (method_definition name: ${NAMED} @name) @def
-  (method_signature name: ${NAMED} @name) @def
-  (abstract_method_signature name: ${NAMED} @name) @def
-  (public_field_definition name: ${NAMED} @name) @def
-  (property_signature name: ${NAMED} @name) @def
-  (variable_declarator name: (identifier) @name) @def
-`;
-
-const JAVASCRIPT_SOURCE = `
-  (function_declaration name: (identifier) @name) @def
-  (generator_function_declaration name: (identifier) @name) @def
-  (class_declaration name: (identifier) @name) @def
-  (method_definition name: ${NAMED} @name) @def
-  (field_definition property: ${NAMED} @name) @def
-  (variable_declarator name: (identifier) @name) @def
-`;
-
-const PYTHON_SOURCE = `
-  (function_definition name: (identifier) @name) @def
-  (class_definition name: (identifier) @name) @def
-  (type_alias_statement left: (type) @name) @def
-  (module (expression_statement (assignment left: (identifier) @name) @def))
-`;
-
-const GO_SOURCE = `
-  (function_declaration name: (identifier) @name) @def
-  (method_declaration name: (field_identifier) @name) @def
-  (type_spec name: (type_identifier) @name) @def
-  (type_alias name: (type_identifier) @name) @def
-  (const_spec name: (identifier) @name) @def
-  (var_spec name: (identifier) @name) @def
-`;
-
-const RUST_SOURCE = `
-  (function_item name: (identifier) @name) @def
-  (function_signature_item name: (identifier) @name) @def
-  (struct_item name: (type_identifier) @name) @def
-  (enum_item name: (type_identifier) @name) @def
-  (union_item name: (type_identifier) @name) @def
-  (type_item name: (type_identifier) @name) @def
-  (trait_item name: (type_identifier) @name) @def
-  (mod_item name: (identifier) @name) @def
-  (const_item name: (identifier) @name) @def
-  (static_item name: (identifier) @name) @def
-  (macro_definition name: (identifier) @name) @def
-  (associated_type name: (type_identifier) @name) @def
-  (impl_item type: (type_identifier) @name) @def
-`;
-
-const HTML_ID = `
-  (attribute
-    (attribute_name) @attr
-    (quoted_attribute_value (attribute_value) @name))
-`;
-
-const HTML_SOURCE = `
-  (
-    (element (start_tag ${HTML_ID})) @def
-    (#eq? @attr "id")
-  )
-  (
-    (element (self_closing_tag ${HTML_ID})) @def
-    (#eq? @attr "id")
-  )
-`;
-
-const CSS_SOURCE = `
-  (rule_set (selectors (class_selector (class_name) @name))) @def
-  (rule_set (selectors (id_selector (id_name) @name))) @def
-  (keyframes_statement (keyframes_name) @name) @def
-  (
-    (declaration (property_name) @name) @def
-    (#match? @name "^-{2}")
-  )
-`;
-
-type Grammar = {
-  extensions: string[];
-  wasm: string;
-  source: string;
-};
-
-function wasm(packageName: string, file: string) {
-  return join(process.cwd(), "node_modules", packageName, file);
-}
-
-const GRAMMARS: Grammar[] = [
-  {
-    extensions: [".ts"],
-    wasm: wasm("tree-sitter-typescript", "tree-sitter-typescript.wasm"),
-    source: TYPESCRIPT_SOURCE,
-  },
-  {
-    extensions: [".tsx"],
-    wasm: wasm("tree-sitter-typescript", "tree-sitter-tsx.wasm"),
-    source: TYPESCRIPT_SOURCE,
-  },
-  {
-    extensions: [".js", ".mjs", ".cjs", ".jsx"],
-    wasm: wasm("tree-sitter-javascript", "tree-sitter-javascript.wasm"),
-    source: JAVASCRIPT_SOURCE,
-  },
-  {
-    extensions: [".py"],
-    wasm: wasm("tree-sitter-python", "tree-sitter-python.wasm"),
-    source: PYTHON_SOURCE,
-  },
-  {
-    extensions: [".go"],
-    wasm: wasm("tree-sitter-go", "tree-sitter-go.wasm"),
-    source: GO_SOURCE,
-  },
-  {
-    extensions: [".rs"],
-    wasm: wasm("tree-sitter-rust", "tree-sitter-rust.wasm"),
-    source: RUST_SOURCE,
-  },
-  {
-    extensions: [".html", ".htm"],
-    wasm: wasm("tree-sitter-html", "tree-sitter-html.wasm"),
-    source: HTML_SOURCE,
-  },
-  {
-    extensions: [".css"],
-    wasm: wasm("tree-sitter-css", "tree-sitter-css.wasm"),
-    source: CSS_SOURCE,
-  },
-];
 
 type LoadedGrammar = {
   extensions: string[];
@@ -176,11 +33,86 @@ function loadGrammars() {
   return ready;
 }
 
+function symbolName(text: string | undefined, path: string) {
+  if (!text) return path;
+  const open = text[0];
+  const close = text[text.length - 1];
+  if (text.length >= 2 && ((open === '"' && close === '"') || (open === "'" && close === "'"))) {
+    return text.slice(1, -1);
+  }
+  return text;
+}
+
 function extensionOf(path: string) {
   const name = path.split("/").at(-1) ?? path;
   const dot = name.lastIndexOf(".");
   if (dot === -1) return "";
   return name.slice(dot);
+}
+
+function captureChunks(grammar: LoadedGrammar, source: string, row: number, path: string) {
+  const parser = new Parser();
+  parser.setLanguage(grammar.language);
+  const tree = parser.parse(source);
+  if (!tree) {
+    parser.delete();
+    return [];
+  }
+
+  const chunks = grammar.query.matches(tree.rootNode).map((match) => {
+    const definition = match.captures.find((capture) => capture.name === "def")!.node;
+    return {
+      symbol: symbolName(match.captures.find((capture) => capture.name === "name")?.node.text, path),
+      startLine: definition.startPosition.row + 1 + row,
+      endLine: definition.endPosition.row + 1 + row,
+      text: source.slice(definition.startIndex, definition.endIndex),
+    };
+  });
+
+  tree.delete();
+  parser.delete();
+  return chunks;
+}
+
+function attribute(element: Node, name: string) {
+  const start = element.descendantsOfType("start_tag")[0];
+  if (!start) return;
+  for (const attr of start.descendantsOfType("attribute")) {
+    const key = attr.descendantsOfType("attribute_name")[0];
+    if (key?.text !== name) continue;
+    return attr.descendantsOfType("attribute_value")[0]?.text.replace(/^["']|["']$/g, "");
+  }
+}
+
+function scriptExtension(lang: string | undefined) {
+  if (lang === "ts" || lang === "typescript") return ".ts";
+  if (lang === "tsx") return ".tsx";
+  if (lang === "jsx") return ".jsx";
+  return ".js";
+}
+
+function styleExtension(lang: string | undefined) {
+  if (lang === "scss") return ".scss";
+  if (lang === "sass") return ".sass";
+  if (lang === "less") return ".less";
+  return ".css";
+}
+
+function embeddedRegions(root: Node) {
+  const regions: { extension: string; text: string; row: number; symbol: string }[] = [];
+  for (const element of root.descendantsOfType(["script_element", "style_element"])) {
+    const raw = element.descendantsOfType("raw_text")[0];
+    if (!raw?.text.trim()) continue;
+    const style = element.type === "style_element";
+    const lang = attribute(element, "lang");
+    regions.push({
+      extension: style ? styleExtension(lang) : scriptExtension(lang),
+      text: raw.text,
+      row: raw.startPosition.row,
+      symbol: style ? "style" : "script",
+    });
+  }
+  return regions;
 }
 
 export async function chunkSource(path: string, source: string): Promise<Chunk[]> {
@@ -189,24 +121,32 @@ export async function chunkSource(path: string, source: string): Promise<Chunk[]
   const grammar = grammars.find((item) => item.extensions.includes(extension));
   if (!grammar) return [];
 
-  const parser = new Parser();
-  parser.setLanguage(grammar.language);
-  const tree = parser.parse(source);
-  if (!tree) return [];
+  const chunks = captureChunks(grammar, source, 0, path);
+  if (extension === ".vue" || extension === ".svelte") {
+    const parser = new Parser();
+    parser.setLanguage(grammar.language);
+    const tree = parser.parse(source);
+    if (tree) {
+      for (const region of embeddedRegions(tree.rootNode)) {
+        const inner = grammars.find((item) => item.extensions.includes(region.extension));
+        if (!inner) continue;
+        const nested = captureChunks(inner, region.text, region.row, path);
+        if (nested.length > 0) {
+          chunks.push(...nested);
+          continue;
+        }
+        chunks.push({
+          symbol: region.symbol,
+          startLine: region.row + 1,
+          endLine: region.row + region.text.split("\n").length,
+          text: region.text,
+        });
+      }
+      tree.delete();
+    }
+    parser.delete();
+  }
 
-  const chunks = grammar.query.matches(tree.rootNode).map((match) => {
-    const definition = match.captures.find((capture) => capture.name === "def")!.node;
-    const name = match.captures.find((capture) => capture.name === "name")?.node.text ?? path;
-    return {
-      symbol: name,
-      startLine: definition.startPosition.row + 1,
-      endLine: definition.endPosition.row + 1,
-      text: source.slice(definition.startIndex, definition.endIndex),
-    };
-  });
-
-  tree.delete();
-  parser.delete();
   if (chunks.length > 0) return chunks;
   return [{ symbol: path, startLine: 1, endLine: source.split("\n").length, text: source }];
 }

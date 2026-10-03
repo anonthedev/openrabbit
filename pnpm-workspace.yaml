@@ -1,11 +1,30 @@
 allowBuilds:
+  '@l1xnan/tree-sitter-sql': false
+  '@tree-sitter-grammars/tree-sitter-hcl': false
+  '@tree-sitter-grammars/tree-sitter-kotlin': false
+  '@tree-sitter-grammars/tree-sitter-lua': false
+  '@tree-sitter-grammars/tree-sitter-svelte': false
+  '@tree-sitter-grammars/tree-sitter-toml': false
+  '@tree-sitter-grammars/tree-sitter-yaml': false
+  '@tree-sitter-grammars/tree-sitter-zig': false
   better-sqlite3: false
   sharp: false
+  tree-sitter-bash: false
+  tree-sitter-c: false
+  tree-sitter-c-sharp: false
+  tree-sitter-cpp: false
   tree-sitter-css: true
+  tree-sitter-elixir: false
   tree-sitter-go: true
   tree-sitter-html: true
+  tree-sitter-java: false
   tree-sitter-javascript: true
+  tree-sitter-json: false
+  tree-sitter-php: false
+  tree-sitter-powershell: false
   tree-sitter-python: true
+  tree-sitter-ruby: false
   tree-sitter-rust: true
+  tree-sitter-scala: false
   tree-sitter-typescript: true
   unrs-resolver: false
