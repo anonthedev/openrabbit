@@ -8,28 +8,88 @@ importers:
 
   .:
     dependencies:
+      '@davisvaughan/tree-sitter-r':
+        specifier: ^1.3.0
+        version: 1.3.0
       '@l1xnan/tree-sitter-sql':
         specifier: ^0.4.7
         version: 0.4.7
+      '@lumis-sh/wasm-astro':
+        specifier: ^0.26.3
+        version: 0.26.3
+      '@lumis-sh/wasm-clojure':
+        specifier: ^0.26.3
+        version: 0.26.3
+      '@lumis-sh/wasm-cmake':
+        specifier: ^0.26.5
+        version: 0.26.5
+      '@lumis-sh/wasm-commonlisp':
+        specifier: ^0.26.4
+        version: 0.26.4
       '@lumis-sh/wasm-dart':
         specifier: ^0.26.4
         version: 0.26.4
+      '@lumis-sh/wasm-dockerfile':
+        specifier: ^0.26.3
+        version: 0.26.3
+      '@lumis-sh/wasm-elm':
+        specifier: ^0.26.3
+        version: 0.26.3
+      '@lumis-sh/wasm-erlang':
+        specifier: ^0.26.5
+        version: 0.26.5
+      '@lumis-sh/wasm-fish':
+        specifier: ^0.26.2
+        version: 0.26.2
+      '@lumis-sh/wasm-fortran':
+        specifier: ^0.26.3
+        version: 0.26.3
+      '@lumis-sh/wasm-glsl':
+        specifier: ^0.26.3
+        version: 0.26.3
       '@lumis-sh/wasm-graphql':
         specifier: ^0.26.3
         version: 0.26.3
       '@lumis-sh/wasm-groovy':
         specifier: ^0.26.1
         version: 0.26.1
+      '@lumis-sh/wasm-nix':
+        specifier: ^0.26.3
+        version: 0.26.3
+      '@lumis-sh/wasm-perl':
+        specifier: ^0.26.5
+        version: 0.26.5
+      '@lumis-sh/wasm-prisma':
+        specifier: ^0.26.3
+        version: 0.26.3
       '@lumis-sh/wasm-protobuf':
         specifier: ^0.26.5
         version: 0.26.5
+      '@lumis-sh/wasm-racket':
+        specifier: ^0.26.4
+        version: 0.26.4
+      '@lumis-sh/wasm-scheme':
+        specifier: ^0.26.4
+        version: 0.26.4
       '@lumis-sh/wasm-scss':
         specifier: ^0.26.2
         version: 0.26.2
       '@lumis-sh/wasm-swift':
         specifier: ^0.26.3
         version: 0.26.3
+      '@lumis-sh/wasm-systemverilog':
+        specifier: ^0.26.6
+        version: 0.26.6
       '@lumis-sh/wasm-vue':
+        specifier: ^0.26.2
+        version: 0.26.2
+      '@lumis-sh/wasm-wgsl':
+        specifier: ^0.26.2
+        version: 0.26.2
+      '@lumis-sh/wasm-xml':
+        specifier: ^0.26.4
+        version: 0.26.4
+      '@lumis-sh/wasm-zsh':
         specifier: ^0.26.2
         version: 0.26.2
       '@tree-sitter-grammars/tree-sitter-hcl':
@@ -89,9 +149,15 @@ importers:
       tree-sitter-elixir:
         specifier: ^0.3.5
         version: 0.3.5
+      tree-sitter-fsharp:
+        specifier: ^0.3.12
+        version: 0.3.12
       tree-sitter-go:
         specifier: ^0.25.0
         version: 0.25.0
+      tree-sitter-haskell:
+        specifier: ^0.23.1
+        version: 0.23.1
       tree-sitter-html:
         specifier: ^0.23.2
         version: 0.23.2
@@ -104,6 +170,18 @@ importers:
       tree-sitter-json:
         specifier: ^0.24.8
         version: 0.24.8
+      tree-sitter-julia:
+        specifier: ^0.23.1
+        version: 0.23.1
+      tree-sitter-make:
+        specifier: ^1.1.1
+        version: 1.1.1
+      tree-sitter-objc:
+        specifier: ^3.0.2
+        version: 3.0.2
+      tree-sitter-ocaml:
+        specifier: ^0.24.2
+        version: 0.24.2
       tree-sitter-php:
         specifier: ^0.24.2
         version: 0.24.2
@@ -122,6 +200,12 @@ importers:
       tree-sitter-scala:
         specifier: ^0.24.0
         version: 0.24.0
+      tree-sitter-solidity:
+        specifier: ^1.2.13
+        version: 1.2.13
+      tree-sitter-starlark:
+        specifier: ^1.3.0
+        version: 1.3.0
       tree-sitter-typescript:
         specifier: ^0.23.2
         version: 0.23.2
@@ -229,6 +313,14 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
+
+  '@davisvaughan/tree-sitter-r@1.3.0':
+    resolution: {integrity: sha512-IwQyWDNgWtTguaEaxKLOD4wuAfbbfpRdVIpMrEvErTQl6VaPGWwCDEJ3O3RpjwDG6pCDmiOQj88xnwb5j/M9fA==}
+    peerDependencies:
+      tree-sitter: ^0.21.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -497,8 +589,88 @@ packages:
       tree_sitter:
         optional: true
 
+  '@lumis-sh/wasm-astro@0.26.3':
+    resolution: {integrity: sha512-MyZY5U9WJM9uGmr+lxLbpz9fGYVcUbgdMAP3dWItFGEzFEd/NG2U2YG6EMQ3I0R9uMqnZ112CxoEdrPkKr7aNg==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-clojure@0.26.3':
+    resolution: {integrity: sha512-pVhOyV6DwxH0ANi2dDmcUxG2tKJUWCyXFuXD83dhFRanLZfisNPQAEK0dCmBMn3g3FpoLg/BJTGKinOhS44ZNg==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-cmake@0.26.5':
+    resolution: {integrity: sha512-M9cH9WZkr1TdbqXM3Ky/uLXsah+tAmdKcmVuOFSexIskMgDNI6TzyOC4J9v/WXmniG/3OIvkzIDzHNmtuaHpuQ==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-commonlisp@0.26.4':
+    resolution: {integrity: sha512-yXzSSepDlY2YU3Trr8O2XXJ+dRt/GDYpLxdvxoSioFBTZG/zn8nDU+qeQvEyVzdcyXBdBJN2wekr0JDBBgwfmw==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
   '@lumis-sh/wasm-dart@0.26.4':
     resolution: {integrity: sha512-4NE7sM8tjDH6rNl8gp/4FRvDwxTo/u/8JYHeSwfYQEqziUsAJveNp8I1uVNf78TI3zzqFpfsEd5AtnOC8p454g==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-dockerfile@0.26.3':
+    resolution: {integrity: sha512-DthYhCv2MxeLHxrrKQBSt80zkvEDdQfKpMOhoGvXMjfW6VINLhYPSf7fxHrrC9IwKe/4wfUFZNGj6wjIGqANoQ==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-elm@0.26.3':
+    resolution: {integrity: sha512-d2Zatk2PbgM3tpJbibsvbinCXBAy5H7g/ySBn229khm3Yul375LkNFWylFO6cUa4N3VbHPr+cMgDeoMDoIlKYg==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-erlang@0.26.5':
+    resolution: {integrity: sha512-y+T0VrK70L5xop54qgVlC9lG6esFJkG3qVOFfRzzQtaRxbrMKI3uSLd9hUyg1yW6SNRhKw/EySJTwt11aw9hSA==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-fish@0.26.2':
+    resolution: {integrity: sha512-6fFF7qw8eArGn/RmJkyAusSiD5hGnsQq6lkolbZuMmrw594aRlBEvJSlAhZQE2/VjK1R9NgmBlnarV8SL5yQfg==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-fortran@0.26.3':
+    resolution: {integrity: sha512-yT30hX3bY623YyQ2mdd9CvCz+eamxNXwqX7mAvmzyOLf3UbCpHxa6/qA6+TwfRYbWlkZmzrx1woPmgJwfk6/qQ==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-glsl@0.26.3':
+    resolution: {integrity: sha512-wi9Azut/kXi8jmvfwQUpaQq/kurlkK4KTbXmLVHMaoL1mIYkoY3KPpZ2W3hhjeyh7Y1LczAqTrGphfC81ala4A==}
     peerDependencies:
       '@lumis-sh/lumis': '>=0.9.0'
     peerDependenciesMeta:
@@ -516,8 +688,48 @@ packages:
   '@lumis-sh/wasm-groovy@0.26.1':
     resolution: {integrity: sha512-jDKzaTq7qSJXhdm4/h8T0xPVlSQlT8+4RzK4DPtNyECuRmHH5qldFn8+Yu9Fo1jj3Mp3VLrxne/g3VY+OCa3FQ==}
 
+  '@lumis-sh/wasm-nix@0.26.3':
+    resolution: {integrity: sha512-QeDw6Gi6fRmmr9dvnUf8dsngxvOApARTjH/ebAqO7ar3Iw89NkG/HmTCiqDHrf45YI3VMg0yDlQ+vjCNenVrqw==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-perl@0.26.5':
+    resolution: {integrity: sha512-XURt1dRJUDB02CzT4mVDh4E+1l4wUjHrZ14QfRh9r5q3XtlTw9qCqUSMbFlNhoTpnQQ6dIlE2Iv4yvqcqi7KMg==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-prisma@0.26.3':
+    resolution: {integrity: sha512-lNBBfx8T9IMkKAHY8K66RBjxZhlMDuok/G6jjJU6V0c7xO5jKGo9tCcBc2lnCBrBgVXLxtlxfcWpNrSvZoRc0Q==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
   '@lumis-sh/wasm-protobuf@0.26.5':
     resolution: {integrity: sha512-6pLQpIX1nTl1QcOHzPz59UsHC7l1MT6UdtwOXqc8mCuPYvyaskX1Y2X5KZKznKKLd7Sjr+JW2jfTWeGjRUbhwA==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-racket@0.26.4':
+    resolution: {integrity: sha512-E3QFvVBASsGM7dETWbn0kvdT92sJXuNoZChNegWLYdARU95GpxuP9ecTimPSQpmTK6k91I3lc0Pw79a7htSIWg==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-scheme@0.26.4':
+    resolution: {integrity: sha512-G2Rg1Z0HuXsybsg0wq8S0dVkLrL8GFTvZ4/ij8Z3mN4bWxNatu+nTczb7LMSEvWJ28cR94GoUi9Ht+jPoX+HuQ==}
     peerDependencies:
       '@lumis-sh/lumis': '>=0.9.0'
     peerDependenciesMeta:
@@ -540,8 +752,40 @@ packages:
       '@lumis-sh/lumis':
         optional: true
 
+  '@lumis-sh/wasm-systemverilog@0.26.6':
+    resolution: {integrity: sha512-1qLMJ43jctcsm5RIbHFs3v76/vbLLZdjz7ag14DAMHzS6AyhZeVY2XstnMbeIJjcK/iJIJkBtp6yG017gqKQtQ==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
   '@lumis-sh/wasm-vue@0.26.2':
     resolution: {integrity: sha512-zKKJy1weRaB92aUD+gBkYmpFPCLDXLH6WLMAm6UZbceTD4AwU8zLgyPU4sfV16rPuYkta1ziXkel5hqBqO3eRw==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-wgsl@0.26.2':
+    resolution: {integrity: sha512-jfJJsVGkZc19MKSudlrrYZ6iuMjN7ZRQdzBKBBWHJjry/XgUiS7HJiLvDHX5ksYOJHxCBZrQ3j8tNq4pZqt+fw==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-xml@0.26.4':
+    resolution: {integrity: sha512-yKXDNZo92EJJpsopF2GjfvQM5EUzwtCtYCcHboJjxlNCp042Asc4YgZo4w6iwagbwYAxuCeOQ1H1kue6FqwlNw==}
+    peerDependencies:
+      '@lumis-sh/lumis': '>=0.9.0'
+    peerDependenciesMeta:
+      '@lumis-sh/lumis':
+        optional: true
+
+  '@lumis-sh/wasm-zsh@0.26.2':
+    resolution: {integrity: sha512-wyrpMW5jCrRNkIxegP1uW+PvizhQEFkFoDYQUdRo43KXrxYae7vVpM4HFziKcr4rmda4ZzzRdwuaWnPbPyyKWg==}
     peerDependencies:
       '@lumis-sh/lumis': '>=0.9.0'
     peerDependenciesMeta:
@@ -2259,10 +2503,26 @@ packages:
     peerDependencies:
       tree-sitter: ^0.21.0
 
+  tree-sitter-fsharp@0.3.12:
+    resolution: {integrity: sha512-w+f/WRAGJnzJygr1DgC9ivIA1hg+RuI/AbGVzUvVdjmT9jWkCapCaFurlwJIZnoJKRjPL3Z+6N9Q2VNwgCwcTg==}
+    peerDependencies:
+      tree-sitter: ^0.25.0
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
   tree-sitter-go@0.25.0:
     resolution: {integrity: sha512-APBc/Dq3xz/e35Xpkhb1blu5UgW+2E3RyGWawZSCNcbGwa7jhSQPS8KsUupuzBla8PCo8+lz9W/JDJjmfRa2tw==}
     peerDependencies:
       tree-sitter: ^0.25.0
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-haskell@0.23.1:
+    resolution: {integrity: sha512-qG4CYhejveu9DLMLEGBz/n9/TTeGSFLC6wniwOgG6m8/v7Dng8qR0ob0EVG7+XH+9WiOxohpGA23EhceWuxY4w==}
+    peerDependencies:
+      tree-sitter: ^0.21.1
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -2307,6 +2567,38 @@ packages:
       tree-sitter:
         optional: true
 
+  tree-sitter-julia@0.23.1:
+    resolution: {integrity: sha512-3vShY0GIu8ajR6hXzE0pyUk6kkfg4pGx3Bfzm6lGmR9aC3fe+LgoBMlaFJ7JY+t0fNFccc77J8HVP67ukuDMxQ==}
+    peerDependencies:
+      tree-sitter: ^0.21.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-make@1.1.1:
+    resolution: {integrity: sha512-szHESi1wObt07uM5a5mwkMjbLHOcgiS5G2YQjU8O+Tfv9RylQBA0umV25lf6gSOefwTsPBnTJGn4SFFdHAVwMg==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-objc@3.0.2:
+    resolution: {integrity: sha512-Hs0ohmx1u5M+0K7efoW+dv/corhBsfjftfIYLtp7dSGeJ+Zj4c33tDIboBYLs6qijRlz6wtHFxa0YX+FibLulA==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-ocaml@0.24.2:
+    resolution: {integrity: sha512-H0RAeCepIyXyTPCQra6yMd7Bn5ZBYkIaddzdLNwVZpM9mCe2e8av+3O6Ojl7Z8YHrV/kYsfHvI2y+Hh7qzcYQQ==}
+    peerDependencies:
+      tree-sitter: ^0.22.4
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
   tree-sitter-php@0.24.2:
     resolution: {integrity: sha512-zwgAePc/HozNaWOOfwRAA+3p8yhuehRw8Fb7vn5qd2XjiIc93uJPryDTMYTSjBRjVIUg/KY6pM3rRzs8dSwKfw==}
     peerDependencies:
@@ -2319,6 +2611,14 @@ packages:
     resolution: {integrity: sha512-5RwNW/qN/cKArZY0znvTOG+OWSau7Agel5K0A8KQ5Nubw/4SyZ5KC02RKCaYcA2ur5UQ8esyxe9+6yXup2MXkw==}
     peerDependencies:
       tree-sitter: ^0.25.0
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-python@0.23.6:
+    resolution: {integrity: sha512-yIM9z0oxKIxT7bAtPOhgoVl6gTXlmlIhue7liFT4oBPF/lha7Ha4dQBS82Av6hMMRZoVnFJI8M6mL+SwWoLD3A==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -2351,6 +2651,23 @@ packages:
     resolution: {integrity: sha512-vkMuAUrBZ1zZz2XcGDQk18Kz73JkpgaeXzbNVobPke0G35sd9jH32aUxG6OLRKM7et0TbsfqkWf4DeJoGk4K1g==}
     peerDependencies:
       tree-sitter: ^0.21.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-solidity@1.2.13:
+    resolution: {integrity: sha512-nO2AbcAuz2Qba8JnPNe/3FVjRRvGY3ApxSJ8UPIzfynJm4PYCMbBoXxxbprvMgjCbGYR/ZrHGIPKzXV7zBa+lQ==}
+    peerDependencies:
+      tree-sitter: ^0.25.0
+      tree_sitter: '*'
+    peerDependenciesMeta:
+      tree_sitter:
+        optional: true
+
+  tree-sitter-starlark@1.3.0:
+    resolution: {integrity: sha512-23BgGxRSbWHq6xMR3zSsLsCfTM6iy3Cweg60QHMLzlR16z1zwilbwPItrKKCuYgeGH7SAL5eG2BUBr3yEYM+hw==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -2460,6 +2777,11 @@ packages:
   yallist@5.0.0:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
+
+  yarn@1.22.22:
+    resolution: {integrity: sha512-prL3kGtyG7o9Z9Sv8IPfBNrWTDmXB4Qbes8A9rEzt6wkJV8mUvoirjU0Mp3GGAU06Y0XQyA3/2/RQFVuK7MTfg==}
+    engines: {node: '>=4.0.0'}
+    hasBin: true
 
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
@@ -2577,6 +2899,11 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
+
+  '@davisvaughan/tree-sitter-r@1.3.0':
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -2798,19 +3125,57 @@ snapshots:
 
   '@l1xnan/tree-sitter-sql@0.4.7': {}
 
+  '@lumis-sh/wasm-astro@0.26.3': {}
+
+  '@lumis-sh/wasm-clojure@0.26.3': {}
+
+  '@lumis-sh/wasm-cmake@0.26.5': {}
+
+  '@lumis-sh/wasm-commonlisp@0.26.4': {}
+
   '@lumis-sh/wasm-dart@0.26.4': {}
+
+  '@lumis-sh/wasm-dockerfile@0.26.3': {}
+
+  '@lumis-sh/wasm-elm@0.26.3': {}
+
+  '@lumis-sh/wasm-erlang@0.26.5': {}
+
+  '@lumis-sh/wasm-fish@0.26.2': {}
+
+  '@lumis-sh/wasm-fortran@0.26.3': {}
+
+  '@lumis-sh/wasm-glsl@0.26.3': {}
 
   '@lumis-sh/wasm-graphql@0.26.3': {}
 
   '@lumis-sh/wasm-groovy@0.26.1': {}
 
+  '@lumis-sh/wasm-nix@0.26.3': {}
+
+  '@lumis-sh/wasm-perl@0.26.5': {}
+
+  '@lumis-sh/wasm-prisma@0.26.3': {}
+
   '@lumis-sh/wasm-protobuf@0.26.5': {}
+
+  '@lumis-sh/wasm-racket@0.26.4': {}
+
+  '@lumis-sh/wasm-scheme@0.26.4': {}
 
   '@lumis-sh/wasm-scss@0.26.2': {}
 
   '@lumis-sh/wasm-swift@0.26.3': {}
 
+  '@lumis-sh/wasm-systemverilog@0.26.6': {}
+
   '@lumis-sh/wasm-vue@0.26.2': {}
+
+  '@lumis-sh/wasm-wgsl@0.26.2': {}
+
+  '@lumis-sh/wasm-xml@0.26.4': {}
+
+  '@lumis-sh/wasm-zsh@0.26.2': {}
 
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:
@@ -4631,7 +4996,17 @@ snapshots:
       node-addon-api: 7.1.1
       node-gyp-build: 4.8.4
 
+  tree-sitter-fsharp@0.3.12:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+
   tree-sitter-go@0.25.0:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+
+  tree-sitter-haskell@0.23.1:
     dependencies:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
@@ -4661,12 +5036,38 @@ snapshots:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
 
+  tree-sitter-julia@0.23.1:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+
+  tree-sitter-make@1.1.1:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+
+  tree-sitter-objc@3.0.2:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+      tree-sitter-c: 0.23.6
+
+  tree-sitter-ocaml@0.24.2:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+
   tree-sitter-php@0.24.2:
     dependencies:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
 
   tree-sitter-powershell@0.26.4:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+
+  tree-sitter-python@0.23.6:
     dependencies:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
@@ -4690,6 +5091,18 @@ snapshots:
     dependencies:
       node-addon-api: 8.9.2
       node-gyp-build: 4.8.4
+
+  tree-sitter-solidity@1.2.13:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+      yarn: 1.22.22
+
+  tree-sitter-starlark@1.3.0:
+    dependencies:
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
+      tree-sitter-python: 0.23.6
 
   tree-sitter-typescript@0.23.2:
     dependencies:
@@ -4857,6 +5270,8 @@ snapshots:
   yallist@3.1.1: {}
 
   yallist@5.0.0: {}
+
+  yarn@1.22.22: {}
 
   yocto-queue@0.1.0: {}
 

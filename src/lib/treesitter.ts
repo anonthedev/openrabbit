@@ -10,6 +10,7 @@ export type Chunk = {
 
 type LoadedGrammar = {
   extensions: string[];
+  filenames?: string[];
   language: Language;
   query: Query;
 };
@@ -24,6 +25,7 @@ function loadGrammars() {
         const language = await Language.load(grammar.wasm);
         return {
           extensions: grammar.extensions,
+          filenames: grammar.filenames,
           language,
           query: new Query(language, grammar.source),
         };
@@ -43,11 +45,29 @@ function symbolName(text: string | undefined, path: string) {
   return text;
 }
 
+function baseName(path: string) {
+  return path.split("/").at(-1) ?? path;
+}
+
 function extensionOf(path: string) {
-  const name = path.split("/").at(-1) ?? path;
+  const name = baseName(path);
   const dot = name.lastIndexOf(".");
   if (dot === -1) return "";
   return name.slice(dot);
+}
+
+function matchesName(filenames: string[] | undefined, path: string) {
+  const base = baseName(path);
+  return filenames?.some((name) =>
+    name.endsWith("*") ? base.startsWith(name.slice(0, -1)) : base === name,
+  );
+}
+
+function findGrammar(grammars: LoadedGrammar[], path: string) {
+  return (
+    grammars.find((item) => matchesName(item.filenames, path)) ??
+    grammars.find((item) => item.extensions.includes(extensionOf(path)))
+  );
 }
 
 function captureChunks(grammar: LoadedGrammar, source: string, row: number, path: string) {
@@ -100,6 +120,18 @@ function styleExtension(lang: string | undefined) {
 
 function embeddedRegions(root: Node) {
   const regions: { extension: string; text: string; row: number; symbol: string }[] = [];
+  for (const front of root.descendantsOfType("frontmatter_js_block")) {
+    const text = front.text.replace(/^\s*---\n?/, "").replace(/\n?---\s*$/, "");
+    if (!text.trim()) continue;
+    const stripped = front.text.length - text.length;
+    const rowPad = front.text.slice(0, stripped).split("\n").length - 1;
+    regions.push({
+      extension: ".ts",
+      text,
+      row: front.startPosition.row + rowPad,
+      symbol: "script",
+    });
+  }
   for (const element of root.descendantsOfType(["script_element", "style_element"])) {
     const raw = element.descendantsOfType("raw_text")[0];
     if (!raw?.text.trim()) continue;
@@ -118,11 +150,11 @@ function embeddedRegions(root: Node) {
 export async function chunkSource(path: string, source: string): Promise<Chunk[]> {
   const grammars = await loadGrammars();
   const extension = extensionOf(path);
-  const grammar = grammars.find((item) => item.extensions.includes(extension));
+  const grammar = findGrammar(grammars, path);
   if (!grammar) return [];
 
   const chunks = captureChunks(grammar, source, 0, path);
-  if (extension === ".vue" || extension === ".svelte") {
+  if (extension === ".vue" || extension === ".svelte" || extension === ".astro") {
     const parser = new Parser();
     parser.setLanguage(grammar.language);
     const tree = parser.parse(source);

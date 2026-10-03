@@ -70,7 +70,7 @@ export async function indexBaseCommit(token: string, owner: string, repo: string
   const db = openDb();
   const indexed = db
     .prepare(`SELECT 1 FROM commits WHERE owner = ? AND repo = ? AND sha = ?`)
-    .get(owner, repo, sha);sha
+    .get(owner, repo, sha);
   if (indexed) return;
 
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/tarball/${sha}`, {
@@ -97,11 +97,12 @@ export async function indexBaseCommit(token: string, owner: string, repo: string
   })));
 
   const embeddedTexts = await embedTexts(chunks.map(({ path, chunk }) => `${path}\n${chunk.symbol}\n${chunk.text}`));
-
+  
+  let embeddingIndex = 0;
   const save = db.transaction(() => {
     for (const file of files) {
       insertFile.run(owner, repo, sha, file.path);
-      for (const [index, chunk] of file.chunks.entries()) {
+      for (const chunk of file.chunks) {
         const { lastInsertRowid } = insertChunk.run(
           owner,
           repo,
@@ -112,8 +113,11 @@ export async function indexBaseCommit(token: string, owner: string, repo: string
           chunk.endLine,
           chunk.text,
         );
-        
-        insertChunkVector.run(BigInt(lastInsertRowid), new Float32Array(embeddedTexts[index]));
+        insertChunkVector.run(
+          BigInt(lastInsertRowid),
+          new Float32Array(embeddedTexts[embeddingIndex]),
+        );
+        embeddingIndex++;
       }
     }
     db.prepare(`INSERT INTO commits (owner, repo, sha) VALUES (?, ?, ?)`).run(owner, repo, sha);

@@ -2,6 +2,7 @@ import { join } from "node:path";
 
 export type Grammar = {
   extensions: string[];
+  filenames?: string[];
   wasm: string;
   source: string;
 };
@@ -382,6 +383,172 @@ const COMPONENT_SOURCE = `
   )
 `;
 
+
+const OBJC_SOURCE = `
+  (class_interface . (identifier) @name) @def
+  (class_implementation . (identifier) @name) @def
+  (method_declaration (method_type) (identifier) @name) @def
+  (method_definition (method_type) (identifier) @name) @def
+`;
+
+const HASKELL_SOURCE = `
+  (module (module_id) @name) @def
+  (signature name: (variable) @name) @def
+  (function name: (variable) @name) @def
+  (data_type name: (name) @name) @def
+`;
+
+const OCAML_SOURCE = `
+  (value_definition (let_binding pattern: (value_name) @name)) @def
+  (module_definition (module_binding (module_name) @name)) @def
+  (type_definition (type_binding name: (type_constructor) @name)) @def
+`;
+
+const OCAML_INTERFACE_SOURCE = `
+  (value_specification (value_name) @name) @def
+  (type_definition (type_binding name: (type_constructor) @name)) @def
+`;
+
+const CLOJURE_SOURCE = `
+  (
+    (list_lit
+      . (sym_lit (sym_name) @kw)
+      . (sym_lit (sym_name) @name)) @def
+    (#match? @kw "^(ns|defn|defn-|def|defmacro)$")
+  )
+`;
+
+const ERLANG_SOURCE = `
+  (module_attribute name: (atom) @name) @def
+  (fun_decl (function_clause name: (atom) @name)) @def
+`;
+
+const FSHARP_SOURCE = `
+  (module_defn (identifier) @name) @def
+  (function_declaration_left . (identifier) @name) @def
+  (record_type_defn (type_name (identifier) @name)) @def
+`;
+
+const JULIA_SOURCE = `
+  (function_definition (signature (call_expression (identifier) @name))) @def
+  (struct_definition (type_head (identifier) @name)) @def
+`;
+
+const R_SOURCE = `
+  (binary_operator lhs: (identifier) @name rhs: (function_definition)) @def
+`;
+
+const PERL_SOURCE = `
+  (subroutine_declaration_statement name: (bareword) @name) @def
+  (package_statement name: (package) @name) @def
+`;
+
+const SOLIDITY_SOURCE = `
+  (contract_declaration name: (identifier) @name) @def
+  (function_definition name: (identifier) @name) @def
+`;
+
+const NIX_SOURCE = `
+  (binding attrpath: (attrpath (identifier) @name)) @def
+`;
+
+const PRISMA_SOURCE = `
+  (model_block . (identifier) @name) @def
+  (enum_block . (identifier) @name) @def
+  (model_field field_name: (identifier) @name) @def
+`;
+
+const DOCKERFILE_SOURCE = `
+  (from_instruction (image_spec (image_name) @name)) @def
+  (env_instruction (env_pair name: (unquoted_string) @name)) @def
+`;
+
+const MAKE_SOURCE = `
+  (rule (targets (word) @name)) @def
+`;
+
+const CMAKE_SOURCE = `
+  (function_def (function_command (argument_list . (argument (unquoted_argument) @name)))) @def
+  (
+    (normal_command
+      (identifier) @cmd
+      (argument_list . (argument (unquoted_argument) @name))) @def
+    (#eq? @cmd "set")
+  )
+`;
+
+const STARLARK_SOURCE = `
+  (function_definition name: (identifier) @name) @def
+  (assignment left: (identifier) @name) @def
+`;
+
+const GLSL_SOURCE = `
+  (function_definition
+    declarator: (function_declarator declarator: (identifier) @name)) @def
+  (struct_specifier name: (type_identifier) @name) @def
+`;
+
+const WGSL_SOURCE = `
+  (function_declaration name: (identifier) @name) @def
+  (struct_declaration name: (identifier) @name) @def
+`;
+
+const VERILOG_SOURCE = `
+  (module_ansi_header name: (simple_identifier) @name) @def
+  (function_body_declaration name: (simple_identifier) @name) @def
+`;
+
+const FORTRAN_SOURCE = `
+  (subroutine_statement name: (name) @name) @def
+  (function_statement name: (name) @name) @def
+`;
+
+const LISP_SOURCE = `
+  (defun (defun_header function_name: (sym_lit) @name)) @def
+`;
+
+const SCHEME_SOURCE = `
+  (
+    (list . (symbol) @kw . (list . (symbol) @name)) @def
+    (#eq? @kw "define")
+  )
+  (
+    (list . (symbol) @kw . (symbol) @name) @def
+    (#eq? @kw "define")
+  )
+`;
+
+const RACKET_SOURCE = `
+  (
+    (list . (symbol) @kw . (list . (symbol) @name)) @def
+    (#eq? @kw "define")
+  )
+  (
+    (list . (symbol) @kw . (symbol) @name) @def
+    (#match? @kw "^(define|struct)$")
+  )
+`;
+
+const ELM_SOURCE = `
+  (module_declaration name: (upper_case_qid) @name) @def
+  (function_declaration_left (lower_case_identifier) @name) @def
+  (type_declaration name: (upper_case_identifier) @name) @def
+`;
+
+const FISH_SOURCE = `
+  (function_definition name: (word) @name) @def
+`;
+
+const ZSH_SOURCE = `
+  (function_definition name: (word) @name) @def
+  (program (variable_assignment name: (variable_name) @name) @def)
+`;
+
+const XML_SOURCE = `
+  (element (STag (Name) @name)) @def
+  (element (EmptyElemTag (Name) @name)) @def
+`;
+
 export const GRAMMARS: Grammar[] = [
   {
     extensions: [".ts"],
@@ -568,5 +735,154 @@ export const GRAMMARS: Grammar[] = [
     wasm: wasm("@tree-sitter-grammars/tree-sitter-svelte", "tree-sitter-svelte.wasm"),
     source: COMPONENT_SOURCE,
   },
-];
 
+  {
+    extensions: [".m", ".mm"],
+    wasm: wasm("tree-sitter-objc", "tree-sitter-objc.wasm"),
+    source: OBJC_SOURCE,
+  },
+  {
+    extensions: [".hs"],
+    wasm: wasm("tree-sitter-haskell", "tree-sitter-haskell.wasm"),
+    source: HASKELL_SOURCE,
+  },
+  {
+    extensions: [".ml"],
+    wasm: wasm("tree-sitter-ocaml", "tree-sitter-ocaml.wasm"),
+    source: OCAML_SOURCE,
+  },
+  {
+    extensions: [".mli"],
+    wasm: wasm("tree-sitter-ocaml", "tree-sitter-ocaml_interface.wasm"),
+    source: OCAML_INTERFACE_SOURCE,
+  },
+  {
+    extensions: [".clj", ".cljs", ".cljc"],
+    wasm: wasm("@lumis-sh/wasm-clojure", "tree-sitter-clojure.wasm"),
+    source: CLOJURE_SOURCE,
+  },
+  {
+    extensions: [".erl", ".hrl"],
+    wasm: wasm("@lumis-sh/wasm-erlang", "tree-sitter-erlang.wasm"),
+    source: ERLANG_SOURCE,
+  },
+  {
+    extensions: [".fs", ".fsx"],
+    wasm: wasm("tree-sitter-fsharp", "tree-sitter-fsharp.wasm"),
+    source: FSHARP_SOURCE,
+  },
+  {
+    extensions: [".jl"],
+    wasm: wasm("tree-sitter-julia", "tree-sitter-julia.wasm"),
+    source: JULIA_SOURCE,
+  },
+  {
+    extensions: [".r", ".R"],
+    wasm: wasm("@davisvaughan/tree-sitter-r", "tree-sitter-r.wasm"),
+    source: R_SOURCE,
+  },
+  {
+    extensions: [".pl", ".pm"],
+    wasm: wasm("@lumis-sh/wasm-perl", "tree-sitter-perl.wasm"),
+    source: PERL_SOURCE,
+  },
+  {
+    extensions: [".sol"],
+    wasm: wasm("tree-sitter-solidity", "tree-sitter-solidity.wasm"),
+    source: SOLIDITY_SOURCE,
+  },
+  {
+    extensions: [".nix"],
+    wasm: wasm("@lumis-sh/wasm-nix", "tree-sitter-nix.wasm"),
+    source: NIX_SOURCE,
+  },
+  {
+    extensions: [".prisma"],
+    wasm: wasm("@lumis-sh/wasm-prisma", "tree-sitter-prisma.wasm"),
+    source: PRISMA_SOURCE,
+  },
+  {
+    extensions: [".astro"],
+    wasm: wasm("@lumis-sh/wasm-astro", "tree-sitter-astro.wasm"),
+    source: COMPONENT_SOURCE,
+  },
+  {
+    extensions: [],
+    filenames: ["Dockerfile", "Dockerfile*", "dockerfile", "dockerfile*"],
+    wasm: wasm("@lumis-sh/wasm-dockerfile", "tree-sitter-dockerfile.wasm"),
+    source: DOCKERFILE_SOURCE,
+  },
+  {
+    extensions: [],
+    filenames: ["Makefile", "makefile", "GNUmakefile"],
+    wasm: wasm("tree-sitter-make", "tree-sitter-make.wasm"),
+    source: MAKE_SOURCE,
+  },
+  {
+    extensions: [".cmake"],
+    filenames: ["CMakeLists.txt"],
+    wasm: wasm("@lumis-sh/wasm-cmake", "tree-sitter-cmake.wasm"),
+    source: CMAKE_SOURCE,
+  },
+  {
+    extensions: [".bzl", ".bazel"],
+    filenames: ["BUILD", "BUILD.bazel"],
+    wasm: wasm("tree-sitter-starlark", "tree-sitter-starlark.wasm"),
+    source: STARLARK_SOURCE,
+  },
+  {
+    extensions: [".glsl"],
+    wasm: wasm("@lumis-sh/wasm-glsl", "tree-sitter-glsl.wasm"),
+    source: GLSL_SOURCE,
+  },
+  {
+    extensions: [".wgsl"],
+    wasm: wasm("@lumis-sh/wasm-wgsl", "tree-sitter-wgsl.wasm"),
+    source: WGSL_SOURCE,
+  },
+  {
+    extensions: [".v", ".sv"],
+    wasm: wasm("@lumis-sh/wasm-systemverilog", "tree-sitter-systemverilog.wasm"),
+    source: VERILOG_SOURCE,
+  },
+  {
+    extensions: [".f90", ".f95"],
+    wasm: wasm("@lumis-sh/wasm-fortran", "tree-sitter-fortran.wasm"),
+    source: FORTRAN_SOURCE,
+  },
+  {
+    extensions: [".lisp"],
+    wasm: wasm("@lumis-sh/wasm-commonlisp", "tree-sitter-commonlisp.wasm"),
+    source: LISP_SOURCE,
+  },
+  {
+    extensions: [".scm"],
+    wasm: wasm("@lumis-sh/wasm-scheme", "tree-sitter-scheme.wasm"),
+    source: SCHEME_SOURCE,
+  },
+  {
+    extensions: [".rkt"],
+    wasm: wasm("@lumis-sh/wasm-racket", "tree-sitter-racket.wasm"),
+    source: RACKET_SOURCE,
+  },
+  {
+    extensions: [".elm"],
+    wasm: wasm("@lumis-sh/wasm-elm", "tree-sitter-elm.wasm"),
+    source: ELM_SOURCE,
+  },
+  {
+    extensions: [".fish"],
+    wasm: wasm("@lumis-sh/wasm-fish", "tree-sitter-fish.wasm"),
+    source: FISH_SOURCE,
+  },
+  {
+    extensions: [".zsh"],
+    wasm: wasm("@lumis-sh/wasm-zsh", "tree-sitter-zsh.wasm"),
+    source: ZSH_SOURCE,
+  },
+  {
+    extensions: [".xml"],
+    wasm: wasm("@lumis-sh/wasm-xml", "tree-sitter-xml.wasm"),
+    source: XML_SOURCE,
+  },
+];
