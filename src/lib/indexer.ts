@@ -7,24 +7,51 @@ import { chunkSource, type Chunk } from "@/lib/treesitter";
 
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist"]);
 const SKIP_FILES = new Set(["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]);
+const EMBED_BATCH_SIZE = 96;
+const EMBED_BATCH_CHARS = 100_000;
+
+function embedBatches(texts: string[]) {
+  const batches: string[][] = [];
+  let batch: string[] = [];
+  let chars = 0;
+  for (const text of texts) {
+    const full = batch.length >= EMBED_BATCH_SIZE || chars + text.length > EMBED_BATCH_CHARS;
+    if (batch.length > 0 && full) {
+      batches.push(batch);
+      batch = [];
+      chars = 0;
+    }
+    batch.push(text);
+    chars += text.length;
+  }
+  if (batch.length > 0) batches.push(batch);
+  return batches;
+}
 
 async function embedTexts(texts: string[]) {
-  const response = await fetch("https://openrouter.ai/api/v1/embeddings", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "openai/text-embedding-3-small",
-      input: texts,
-    }),
-  });
-  if (!response.ok) throw new Error(await response.text());
-  const { data } = (await response.json()) as {
-    data: { index: number; embedding: number[] }[];
-  };
-  return data.sort((a, b) => a.index - b.index).map((item) => item.embedding);
+  const embeddings: number[][] = [];
+  let done = 0;
+  for (const batch of embedBatches(texts)) {
+    const response = await fetch("https://openrouter.ai/api/v1/embeddings", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/text-embedding-3-small",
+        input: batch,
+      }),
+    });
+    if (!response.ok) throw new Error(await response.text());
+    const { data } = (await response.json()) as {
+      data: { index: number; embedding: number[] }[];
+    };
+    embeddings.push(...data.sort((a, b) => a.index - b.index).map((item) => item.embedding));
+    done += batch.length;
+    console.log(`embedded ${done}/${texts.length} chunks`);
+  }
+  return embeddings;
 }
 
 type IndexedFile = { path: string; chunks: Chunk[] };
@@ -71,7 +98,10 @@ export async function indexBaseCommit(token: string, owner: string, repo: string
   const indexed = db
     .prepare(`SELECT 1 FROM commits WHERE owner = ? AND repo = ? AND sha = ?`)
     .get(owner, repo, sha);
-  if (indexed) return;
+  if (indexed) {
+    console.log(`already indexed ${owner}/${repo} at ${sha}`);
+    return;
+  }
 
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/tarball/${sha}`, {
     headers: githubHeaders(token),

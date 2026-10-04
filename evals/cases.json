@@ -1,0 +1,192 @@
+[
+  {
+    "id": "planted-01-team-role",
+    "source": "planted",
+    "language": "typescript",
+    "severity": "high",
+    "category": "bug",
+    "title": "Let team admins add guests to a booking",
+    "description": "Organizers can already add guests. This lets a team admin or a team owner do it too, without being the booking organizer.",
+    "label": {
+      "path": "src/bookings/addGuests.ts",
+      "line": 5,
+      "anchor": "(await isTeamAdmin(userId, teamId)) && (await isTeamOwner(userId, teamId))",
+      "impact": "The check requires both team admin and team owner. An admin who is not the owner, and an owner who is not an admin, still get forbidden, so the permission change does not work."
+    },
+    "diff": "diff --git a/src/bookings/addGuests.ts b/src/bookings/addGuests.ts\n--- a/src/bookings/addGuests.ts\n+++ b/src/bookings/addGuests.ts\n@@ -1,7 +1,10 @@\n import { isTeamAdmin, isTeamOwner } from \"./teams\";\n \n export async function addGuests(userId: string, teamId: string, bookingOwnerId: string) {\n-  if (bookingOwnerId !== userId) {\n+  const isTeamAdminOrOwner =\n+    (await isTeamAdmin(userId, teamId)) && (await isTeamOwner(userId, teamId));\n+  const isOrganizer = bookingOwnerId === userId;\n+  if (!isTeamAdminOrOwner && !isOrganizer) {\n     throw new Error(\"forbidden\");\n   }\n   return { ok: true };\n",
+    "files": {
+      "src/bookings/addGuests.ts": "import { isTeamAdmin, isTeamOwner } from \"./teams\";\n\nexport async function addGuests(userId: string, teamId: string, bookingOwnerId: string) {\n  const isTeamAdminOrOwner =\n    (await isTeamAdmin(userId, teamId)) && (await isTeamOwner(userId, teamId));\n  const isOrganizer = bookingOwnerId === userId;\n  if (!isTeamAdminOrOwner && !isOrganizer) {\n    throw new Error(\"forbidden\");\n  }\n  return { ok: true };\n}\n"
+    }
+  },
+  {
+    "id": "planted-02-guest-blacklist",
+    "source": "planted",
+    "language": "typescript",
+    "severity": "high",
+    "category": "security",
+    "title": "Reject blacklisted emails when adding guests",
+    "description": "BLACKLISTED_GUEST_EMAILS is a comma-separated list. Guests on that list must not be added to a booking.",
+    "label": {
+      "path": "src/bookings/filterGuests.ts",
+      "line": 6,
+      "anchor": "!blacklisted.includes(guest)",
+      "impact": "The blacklist is lowercased and the guest address is not. Guest@blocked.com is not found in a list that contains guest@blocked.com, so the block is bypassed by changing letter case."
+    },
+    "diff": "diff --git a/src/bookings/filterGuests.ts b/src/bookings/filterGuests.ts\n--- a/src/bookings/filterGuests.ts\n+++ b/src/bookings/filterGuests.ts\n@@ -1,3 +1,7 @@\n export function filterGuests(guests: string[], existing: string[]) {\n-  return guests.filter((guest) => !existing.includes(guest));\n+  const blacklisted = (process.env.BLACKLISTED_GUEST_EMAILS ?? \"\")\n+    .split(\",\")\n+    .map((email) => email.trim().toLowerCase())\n+    .filter(Boolean);\n+  return guests.filter((guest) => !existing.includes(guest) && !blacklisted.includes(guest));\n }\n",
+    "files": {
+      "src/bookings/filterGuests.ts": "export function filterGuests(guests: string[], existing: string[]) {\n  const blacklisted = (process.env.BLACKLISTED_GUEST_EMAILS ?? \"\")\n    .split(\",\")\n    .map((email) => email.trim().toLowerCase())\n    .filter(Boolean);\n  return guests.filter((guest) => !existing.includes(guest) && !blacklisted.includes(guest));\n}\n"
+    }
+  },
+  {
+    "id": "planted-03-user-search",
+    "source": "planted",
+    "language": "python",
+    "severity": "critical",
+    "category": "security",
+    "title": "Add email search to the admin user list",
+    "description": "Admins can filter the user list by a substring of the email address.",
+    "label": {
+      "path": "src/admin/users.py",
+      "line": 2,
+      "anchor": "sql = f\"SELECT id, email FROM users WHERE email LIKE '%{q}%' ORDER BY id\"",
+      "impact": "q is concatenated into the SQL string. A caller who can set q can close the quote and run their own statement."
+    },
+    "diff": "diff --git a/src/admin/users.py b/src/admin/users.py\n--- a/src/admin/users.py\n+++ b/src/admin/users.py\n@@ -1,3 +1,4 @@\n-def search_users(cursor):\n-    cursor.execute(\"SELECT id, email FROM users ORDER BY id\")\n+def search_users(cursor, q: str):\n+    sql = f\"SELECT id, email FROM users WHERE email LIKE '%{q}%' ORDER BY id\"\n+    cursor.execute(sql)\n     return cursor.fetchall()\n",
+    "files": {
+      "src/admin/users.py": "def search_users(cursor, q: str):\n    sql = f\"SELECT id, email FROM users WHERE email LIKE '%{q}%' ORDER BY id\"\n    cursor.execute(sql)\n    return cursor.fetchall()\n"
+    }
+  },
+  {
+    "id": "planted-04-webhook-deliver",
+    "source": "planted",
+    "language": "typescript",
+    "severity": "critical",
+    "category": "security",
+    "title": "POST booking payloads to the customer's webhook",
+    "description": "When a booking is created, send the JSON payload to the webhook URL on the booking request. Reject a URL that is not http or https.",
+    "label": {
+      "path": "src/webhooks/deliver.ts",
+      "line": 2,
+      "anchor": "if (!webhookUrl.startsWith(\"http://\") && !webhookUrl.startsWith(\"https://\"))",
+      "impact": "The check only looks at the scheme. http://169.254.169.254/ and http://localhost/ pass, and the server then requests that address. A caller who sets the webhook URL can reach internal services."
+    },
+    "diff": "diff --git a/src/webhooks/deliver.ts b/src/webhooks/deliver.ts\n--- a/src/webhooks/deliver.ts\n+++ b/src/webhooks/deliver.ts\n@@ -1,3 +1,11 @@\n-export async function deliverBooking(body: string) {\n-  return { delivered: false, body };\n+export async function deliverBooking(webhookUrl: string, body: string) {\n+  if (!webhookUrl.startsWith(\"http://\") && !webhookUrl.startsWith(\"https://\")) {\n+    throw new Error(\"webhook url must be http(s)\");\n+  }\n+  const response = await fetch(webhookUrl, {\n+    method: \"POST\",\n+    headers: { \"content-type\": \"application/json\" },\n+    body,\n+  });\n+  return { delivered: response.ok };\n }\n",
+    "files": {
+      "src/webhooks/deliver.ts": "export async function deliverBooking(webhookUrl: string, body: string) {\n  if (!webhookUrl.startsWith(\"http://\") && !webhookUrl.startsWith(\"https://\")) {\n    throw new Error(\"webhook url must be http(s)\");\n  }\n  const response = await fetch(webhookUrl, {\n    method: \"POST\",\n    headers: { \"content-type\": \"application/json\" },\n    body,\n  });\n  return { delivered: response.ok };\n}\n"
+    }
+  },
+  {
+    "id": "planted-05-token-context",
+    "source": "planted",
+    "language": "typescript",
+    "severity": "critical",
+    "category": "bug",
+    "title": "Encode grant type and token id into the access token",
+    "description": "Reject a missing grant type or raw token id before the token context is stored. Later code rebuilds the token id from those two fields.",
+    "label": {
+      "path": "src/auth/tokenContext.ts",
+      "line": 7,
+      "anchor": "if (grantType == null) throw new Error(\"tokenId is required\");",
+      "impact": "The second check tests grantType again, so a null tokenId is stored. Later encoding uses a token id that was never validated."
+    },
+    "diff": "diff --git a/src/auth/tokenContext.ts b/src/auth/tokenContext.ts\n--- a/src/auth/tokenContext.ts\n+++ b/src/auth/tokenContext.ts\n@@ -2,5 +2,8 @@\n   constructor(\n     readonly grantType: string,\n     readonly tokenId: string,\n-  ) {}\n+  ) {\n+    if (grantType == null) throw new Error(\"grantType is required\");\n+    if (grantType == null) throw new Error(\"tokenId is required\");\n+  }\n }\n",
+    "files": {
+      "src/auth/tokenContext.ts": "export class TokenContext {\n  constructor(\n    readonly grantType: string,\n    readonly tokenId: string,\n  ) {\n    if (grantType == null) throw new Error(\"grantType is required\");\n    if (grantType == null) throw new Error(\"tokenId is required\");\n  }\n}\n"
+    }
+  },
+  {
+    "id": "planted-06-replay-window",
+    "source": "planted",
+    "language": "python",
+    "severity": "high",
+    "category": "bug",
+    "title": "Require exactly one of timestamp or age on replay delete",
+    "description": "A bulk replay delete must be bounded by either an absolute timestamp or an age in days, and not by both. A timestamp of 0 is a real bound.",
+    "label": {
+      "path": "src/replays/window.py",
+      "line": 2,
+      "anchor": "has_timestamp = bool(payload.get(\"timestamp\"))",
+      "impact": "A timestamp of 0 is falsy, so it is treated as omitted. A request with timestamp 0 and no age is rejected, and a request with timestamp 0 plus an age passes as age-only."
+    },
+    "diff": "diff --git a/src/replays/window.py b/src/replays/window.py\n--- a/src/replays/window.py\n+++ b/src/replays/window.py\n@@ -1,2 +1,6 @@\n def validate_window(payload: dict) -> dict:\n+    has_timestamp = bool(payload.get(\"timestamp\"))\n+    has_age = \"age\" in payload\n+    if has_timestamp == has_age:\n+        raise ValueError(\"provide exactly one of timestamp or age\")\n     return payload\n",
+    "files": {
+      "src/replays/window.py": "def validate_window(payload: dict) -> dict:\n    has_timestamp = bool(payload.get(\"timestamp\"))\n    has_age = \"age\" in payload\n    if has_timestamp == has_age:\n        raise ValueError(\"provide exactly one of timestamp or age\")\n    return payload\n"
+    }
+  },
+  {
+    "id": "planted-07-override-end",
+    "source": "planted",
+    "language": "typescript",
+    "severity": "high",
+    "category": "bug",
+    "title": "Store date overrides in the host timezone",
+    "description": "A date override should keep the slot the host picked. Convert the start and the end into the host timezone before saving.",
+    "label": {
+      "path": "src/availability/override.ts",
+      "line": 5,
+      "anchor": "const end = utcToZonedTime(slotStart, timeZone);",
+      "impact": "The saved end is the zoned start, not the zoned slot end. The override covers the wrong interval."
+    },
+    "diff": "diff --git a/src/availability/override.ts b/src/availability/override.ts\n--- a/src/availability/override.ts\n+++ b/src/availability/override.ts\n@@ -1,5 +1,7 @@\n import { utcToZonedTime } from \"date-fns-tz\";\n \n export function overrideWindow(slotStart: Date, slotEnd: Date, timeZone: string) {\n-  return { start: slotStart, end: slotEnd, timeZone };\n+  const start = utcToZonedTime(slotStart, timeZone);\n+  const end = utcToZonedTime(slotStart, timeZone);\n+  return { start, end, timeZone };\n }\n",
+    "files": {
+      "src/availability/override.ts": "import { utcToZonedTime } from \"date-fns-tz\";\n\nexport function overrideWindow(slotStart: Date, slotEnd: Date, timeZone: string) {\n  const start = utcToZonedTime(slotStart, timeZone);\n  const end = utcToZonedTime(slotStart, timeZone);\n  return { start, end, timeZone };\n}\n"
+    }
+  },
+  {
+    "id": "planted-08-audit-page",
+    "source": "planted",
+    "language": "python",
+    "severity": "high",
+    "category": "bug",
+    "title": "Add previous-page cursors to audit log pagination",
+    "description": "The audit log paginator already walks forward. A negative cursor offset should return the previous page.",
+    "label": {
+      "path": "src/audit/paginator.py",
+      "line": 4,
+      "anchor": "start = offset",
+      "impact": "A negative offset is passed into a Django QuerySet slice. Django raises AssertionError on a negative index, so the previous-page request errors instead of returning a page."
+    },
+    "diff": "diff --git a/src/audit/paginator.py b/src/audit/paginator.py\n--- a/src/audit/paginator.py\n+++ b/src/audit/paginator.py\n@@ -1,4 +1,7 @@\n def get_result(queryset, offset: int, limit: int):\n     # queryset is a Django QuerySet. Slicing it hits the database.\n-    start = max(offset, 0)\n+    if offset < 0:\n+        start = offset\n+    else:\n+        start = max(offset, 0)\n     return queryset[start : start + limit]\n",
+    "files": {
+      "src/audit/paginator.py": "def get_result(queryset, offset: int, limit: int):\n    # queryset is a Django QuerySet. Slicing it hits the database.\n    if offset < 0:\n        start = offset\n    else:\n        start = max(offset, 0)\n    return queryset[start : start + limit]\n"
+    }
+  },
+  {
+    "id": "planted-09-monitor-name",
+    "source": "planted",
+    "language": "python",
+    "severity": "high",
+    "category": "bug",
+    "title": "Show the resolved monitor name on incidents",
+    "description": "Incident creation should display the monitor name after the {owner} placeholder is filled in.",
+    "label": {
+      "path": "src/monitors/config.py",
+      "line": 4,
+      "anchor": "return monitor.config",
+      "impact": "The resolved name is written onto a copy. The return is the original config, so callers still get the unresolved name."
+    },
+    "diff": "diff --git a/src/monitors/config.py b/src/monitors/config.py\n--- a/src/monitors/config.py\n+++ b/src/monitors/config.py\n@@ -1,2 +1,9 @@\n def monitor_config(monitor):\n+    config = dict(monitor.config)\n+    config[\"name\"] = resolve_display_name(config)\n     return monitor.config\n+\n+\n+def resolve_display_name(config: dict) -> str:\n+    owner = config.get(\"placeholders\", {}).get(\"owner\", \"\")\n+    return str(config.get(\"name\", \"monitor\")).replace(\"{owner}\", owner)\n",
+    "files": {
+      "src/monitors/config.py": "def monitor_config(monitor):\n    config = dict(monitor.config)\n    config[\"name\"] = resolve_display_name(config)\n    return monitor.config\n\n\ndef resolve_display_name(config: dict) -> str:\n    owner = config.get(\"placeholders\", {}).get(\"owner\", \"\")\n    return str(config.get(\"name\", \"monitor\")).replace(\"{owner}\", owner)\n"
+    }
+  },
+  {
+    "id": "planted-10-device-limit",
+    "source": "planted",
+    "language": "go",
+    "severity": "high",
+    "category": "bug",
+    "title": "Cap anonymous devices per organization",
+    "description": "An organization can set a maximum number of anonymous devices. Registering past that limit must return ErrLimit. A repeat of a device id that was actually stored must not insert another row.",
+    "label": {
+      "path": "src/devices/register.go",
+      "line": 18,
+      "anchor": "s.seen.Store(id, struct{}{})",
+      "impact": "The id is cached before the limit check. A call that returns ErrLimit leaves the id in the cache. The next call hits the cache and returns nil, so the caller is told the device was registered."
+    },
+    "diff": "diff --git a/src/devices/register.go b/src/devices/register.go\n--- a/src/devices/register.go\n+++ b/src/devices/register.go\n@@ -12,6 +12,10 @@\n }\n \n func (s *Store) Register(ctx context.Context, id string) error {\n+\tif _, ok := s.seen.Load(id); ok {\n+\t\treturn nil\n+\t}\n+\ts.seen.Store(id, struct{}{})\n \tif s.count(ctx) >= s.limit {\n \t\treturn ErrLimit\n \t}\n",
+    "files": {
+      "src/devices/register.go": "package devices\n\nimport (\n\t\"context\"\n\t\"sync\"\n)\n\ntype Store struct {\n\tseen  sync.Map\n\tlimit int\n\tdb    DB\n}\n\nfunc (s *Store) Register(ctx context.Context, id string) error {\n\tif _, ok := s.seen.Load(id); ok {\n\t\treturn nil\n\t}\n\ts.seen.Store(id, struct{}{})\n\tif s.count(ctx) >= s.limit {\n\t\treturn ErrLimit\n\t}\n\treturn s.db.Insert(ctx, id)\n}\n"
+    }
+  }
+]

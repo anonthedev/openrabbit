@@ -1,6 +1,9 @@
 import { Language, Parser, Query, type Node } from "web-tree-sitter";
 import { GRAMMARS } from "@/lib/grammars";
 
+const MAX_CHUNK_CHARS = 2000;
+const MAX_EMBED_CHARS = 12_000;
+
 export type Chunk = {
   symbol: string;
   startLine: number;
@@ -16,6 +19,74 @@ type LoadedGrammar = {
 };
 
 let ready: Promise<LoadedGrammar[]> | undefined;
+
+function contains(parent: Chunk, child: Chunk) {
+  if (parent === child) return false;
+  if (parent.startLine === child.startLine && parent.endLine === child.endLine) return false;
+  return parent.startLine <= child.startLine && parent.endLine >= child.endLine;
+}
+
+
+function collapseChunks(chunks: Chunk[]): Chunk[] {
+  const roots = chunks.filter((chunk) => !chunks.some((other) => contains(other, chunk)));
+  const kept: Chunk[] = [];
+  for (const root of roots) {
+    const children = chunks.filter((chunk) => contains(root, chunk));
+    if (root.text.length <= MAX_CHUNK_CHARS || children.length === 0) {
+      kept.push(root);
+      continue;
+    }
+    kept.push(...collapseChunks(children));
+  }
+  return kept;
+}
+
+function splitChunk(chunk: Chunk): Chunk[] {
+  if (chunk.text.length <= MAX_EMBED_CHARS) return [chunk];
+
+  const parts: Chunk[] = [];
+  let lines: string[] = [];
+  let chars = 0;
+  let startLine = chunk.startLine;
+
+  const push = (text: string, start: number, end: number) => {
+    parts.push({ symbol: chunk.symbol, startLine: start, endLine: end, text });
+  };
+  const flush = (endLine: number) => {
+    if (lines.length === 0) return;
+    push(lines.join("\n"), startLine, endLine);
+    lines = [];
+    chars = 0;
+  };
+
+  for (const [index, line] of chunk.text.split("\n").entries()) {
+    const lineNo = chunk.startLine + index;
+    if (line.length > MAX_EMBED_CHARS) {
+      flush(lineNo - 1);
+      for (let offset = 0; offset < line.length; offset += MAX_EMBED_CHARS) {
+        push(line.slice(offset, offset + MAX_EMBED_CHARS), lineNo, lineNo);
+      }
+      startLine = lineNo + 1;
+      continue;
+    }
+    const extra = lines.length > 0 ? line.length + 1 : line.length;
+    if (lines.length > 0 && chars + extra > MAX_EMBED_CHARS) {
+      flush(lineNo - 1);
+      startLine = lineNo;
+    }
+    lines.push(line);
+    chars += lines.length === 1 ? line.length : line.length + 1;
+  }
+  flush(chunk.endLine);
+
+  const seen = new Map<string, number>();
+  return parts.map((part) => {
+    const key = `${part.startLine}:${part.endLine}`;
+    const count = (seen.get(key) ?? 0) + 1;
+    seen.set(key, count);
+    return count === 1 ? part : { ...part, symbol: `${part.symbol}#${count}` };
+  });
+}
 
 function loadGrammars() {
   ready ??= (async () => {
@@ -178,7 +249,11 @@ export async function chunkSource(path: string, source: string): Promise<Chunk[]
     }
     parser.delete();
   }
-
-  if (chunks.length > 0) return chunks;
-  return [{ symbol: path, startLine: 1, endLine: source.split("\n").length, text: source }];
+  
+  const collapsed = collapseChunks(chunks);
+  const chunksToStore =
+    collapsed.length > 0
+      ? collapsed
+      : [{ symbol: path, startLine: 1, endLine: source.split("\n").length, text: source }];
+  return chunksToStore.flatMap(splitChunk);
 }

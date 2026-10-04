@@ -2,6 +2,7 @@
 
 *.pem
 /data
+/evals/runs
 # dependencies
 /node_modules
 /.pnp

@@ -7,11 +7,16 @@ export async function POST(request: Request) {
   const body = Buffer.from(await request.arrayBuffer());
 
   if (!isValidSignature(body, request.headers.get("x-hub-signature-256"))) {
+    console.log("webhook rejected: invalid signature");
     return new Response("invalid signature", { status: 401 });
   }
 
   const event = request.headers.get("x-github-event");
   const payload = JSON.parse(body.toString("utf8")) as PullRequestPayload;
+  const owner = payload.repository?.owner.login;
+  const repo = payload.repository?.name;
+  const number = payload.pull_request?.number;
+  const where = owner && repo && number ? `${owner}/${repo}#${number}` : "unknown pull request";
 
   if (
     event === "pull_request" &&
@@ -19,7 +24,12 @@ export async function POST(request: Request) {
       payload.action === "synchronize" ||
       payload.action === "reopened")
   ) {
-    void reviewPullRequest(payload);
+    console.log(`webhook ${where} ${payload.action}`);
+    void reviewPullRequest(payload).catch((error: unknown) => {
+      console.error(`review ${where} failed`, error);
+    });
+  } else {
+    console.log(`webhook ignored: ${event ?? "none"} ${payload.action ?? ""}`.trim());
   }
 
   return new Response("ok", { status: 200 });
